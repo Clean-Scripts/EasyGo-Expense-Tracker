@@ -3,60 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EasyGo Tracker - Ledger</title>
+    <title>EasyGo Tracker v3.3</title>
     <link rel="icon" type="image/png" href="logo.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body { font-family: 'Inter', sans-serif; }
+        /* Camera is NOT mirrored anymore */
+        #video { width: 100%; border-radius: 1.5rem; background: #000; aspect-ratio: 3/4; object-fit: cover; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        #video { width: 100%; border-radius: 1.5rem; background: #000; transform: scaleX(-1); }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen pb-24">
 
     <header class="bg-white border-b p-4 sticky top-0 z-50 shadow-sm">
-        <div class="max-w-xl mx-auto space-y-3">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <img src="https://raw.githubusercontent.com/Clean-Scripts/EasyGo-Expense-Tracker/refs/heads/main/logo.png" alt="EasyGo" class="h-10 w-10 rounded-full border object-cover">
-                    <h1 class="text-lg font-black text-blue-600 tracking-tighter">EasyGo</h1>
-                </div>
-                <div id="status" class="hidden text-[9px] font-black bg-blue-600 text-white px-3 py-1 rounded-full animate-pulse uppercase">AI Processing</div>
+        <div class="max-w-xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <img src="https://raw.githubusercontent.com/Clean-Scripts/EasyGo-Expense-Tracker/refs/heads/main/logo.png" alt="EasyGo" class="h-10 w-10 rounded-full border object-cover">
+                <h1 class="text-lg font-black text-blue-600">EasyGo</h1>
             </div>
-            <div class="relative">
-                <input type="text" id="searchInput" oninput="render()" placeholder="Search Invoice, GSTN, or Org Name..." 
-                       class="w-full p-3 pl-10 bg-slate-100 border-none rounded-2xl text-xs focus:ring-2 focus:ring-blue-500">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-            </div>
+            <div id="status" class="hidden text-[9px] font-black bg-blue-600 text-white px-3 py-1 rounded-full animate-pulse uppercase">AI Reading...</div>
         </div>
     </header>
 
     <main class="max-w-xl mx-auto p-4 space-y-4">
         
-        <section class="relative bg-black rounded-[2.5rem] overflow-hidden shadow-2xl aspect-video border-4 border-white">
+        <div class="relative">
+            <input type="text" id="searchInput" oninput="render()" placeholder="Search Invoice or GST..." 
+                   class="w-full p-3 pl-10 bg-white border rounded-2xl text-xs focus:ring-2 focus:ring-blue-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+        </div>
+
+        <section class="relative bg-black rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white">
             <video id="video" autoplay playsinline></video>
             <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-4">
-                <button onclick="startCamera()" class="bg-white/20 backdrop-blur-md text-white px-4 py-2 rounded-full text-[10px] font-bold">Flip Cam</button>
-                <button onclick="processBill()" class="bg-white h-14 w-14 rounded-full border-4 border-blue-600 flex items-center justify-center active:scale-90 shadow-xl transition-all">
+                <button onclick="startCamera()" class="bg-white/20 backdrop-blur-md text-white px-4 py-2 rounded-full text-[10px] font-bold">Start Cam</button>
+                <button onclick="processBill()" class="bg-white h-14 w-14 rounded-full border-4 border-blue-600 flex items-center justify-center active:scale-90 transition-all">
                     <div class="h-8 w-8 bg-blue-600 rounded-full"></div>
                 </button>
             </div>
             <canvas id="canvas" class="hidden"></canvas>
         </section>
 
-        <section id="entryForm" class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100 space-y-4">
+        <section class="bg-white p-6 rounded-[2.5rem] shadow-sm border space-y-4">
             <input type="hidden" id="editId">
             <div class="grid grid-cols-2 gap-3">
                 <div class="space-y-1">
-                    <label class="text-[9px] font-black text-slate-400 uppercase">1. Date</label>
+                    <label class="text-[9px] font-black text-slate-400">1. DATE</label>
                     <input type="date" id="date" class="w-full p-3 bg-slate-50 rounded-xl border-none text-xs">
                 </div>
                 <div class="space-y-1">
-                    <label class="text-[9px] font-black text-slate-400 uppercase">Bill Type</label>
+                    <label class="text-[9px] font-black text-slate-400 uppercase">Type</label>
                     <select id="type" class="w-full p-3 bg-slate-50 rounded-xl border-none text-xs font-bold">
                         <option value="Spent">🔴 Spent</option>
                         <option value="Earned">🟢 Earned</option>
@@ -65,86 +63,78 @@
             </div>
 
             <div class="space-y-1">
-                <label class="text-[9px] font-black text-slate-400 uppercase">2. Organisation Name</label>
-                <input type="text" id="org" placeholder="Shop/Person Name" class="w-full p-3 bg-slate-50 rounded-xl border-none text-xs font-bold">
+                <label class="text-[9px] font-black text-slate-400">2. ORGANISATION NAME</label>
+                <input type="text" id="org" class="w-full p-3 bg-slate-50 rounded-xl border-none text-xs font-bold">
             </div>
 
             <div class="grid grid-cols-2 gap-3">
                 <div class="space-y-1">
-                    <label class="text-[9px] font-black text-slate-400 uppercase">3. Invoice / S.No</label>
+                    <label class="text-[9px] font-black text-slate-400">3. INVOICE / S.NO</label>
                     <input type="text" id="inv" class="w-full p-3 bg-slate-50 rounded-xl border-none text-xs">
                 </div>
                 <div class="space-y-1">
-                    <label class="text-[9px] font-black text-slate-400 uppercase">4. GST Number</label>
-                    <input type="text" id="gstn" class="w-full p-3 bg-slate-50 rounded-xl border-none text-xs uppercase font-mono">
+                    <label class="text-[9px] font-black text-slate-400">4. GST NUMBER</label>
+                    <input type="text" id="gstn" class="w-full p-3 bg-slate-50 rounded-xl border-none text-xs uppercase">
                 </div>
             </div>
 
             <div class="space-y-1">
-                <label class="text-[9px] font-black text-slate-400 uppercase">5. Item Name(s)</label>
-                <textarea id="items" rows="1" placeholder="Multiple items allowed..." class="w-full p-3 bg-slate-50 rounded-xl border-none text-xs"></textarea>
+                <label class="text-[9px] font-black text-slate-400">5. ITEM NAME(S)</label>
+                <textarea id="items" rows="1" class="w-full p-3 bg-slate-50 rounded-xl border-none text-xs"></textarea>
             </div>
 
             <div class="grid grid-cols-3 gap-2">
-                <div class="space-y-1">
-                    <label class="text-[9px] font-black text-slate-400 uppercase">6. Qty</label>
-                    <input type="number" id="qty" value="1" oninput="calculate()" class="w-full p-3 bg-slate-50 rounded-xl border-none text-xs text-center">
-                </div>
-                <div class="space-y-1">
-                    <label class="text-[9px] font-black text-slate-400 uppercase">7. Rate</label>
-                    <input type="number" id="rate" oninput="calculate()" class="w-full p-3 bg-slate-50 rounded-xl border-none text-xs text-center font-bold">
-                </div>
-                <div class="space-y-1">
-                    <label class="text-[9px] font-black text-slate-400 uppercase">8. GST ₹</label>
-                    <input type="number" id="gstAmount" oninput="calculate()" class="w-full p-3 bg-slate-50 rounded-xl border-none text-xs text-center">
-                </div>
+                <input type="number" id="qty" value="1" oninput="calculate()" placeholder="Qty" class="p-3 bg-slate-50 rounded-xl border-none text-xs text-center">
+                <input type="number" id="rate" oninput="calculate()" placeholder="Rate" class="p-3 bg-slate-50 rounded-xl border-none text-xs text-center font-bold">
+                <input type="number" id="gstAmount" oninput="calculate()" placeholder="GST" class="p-3 bg-slate-50 rounded-xl border-none text-xs text-center">
             </div>
 
-            <div class="bg-blue-600 p-5 rounded-3xl text-center shadow-lg shadow-blue-100">
-                <p class="text-[9px] text-blue-100 font-black uppercase mb-1">9. Total Amount (INR)</p>
+            <div class="bg-blue-600 p-5 rounded-3xl text-center shadow-lg">
+                <p class="text-[9px] text-blue-100 font-bold uppercase mb-1">9. Total Payable</p>
                 <h2 id="totalLabel" class="text-3xl font-black text-white">₹ 0.00</h2>
             </div>
 
-            <button id="saveBtn" onclick="save()" class="w-full bg-slate-900 text-white font-black py-5 rounded-2xl shadow-xl active:scale-[0.98] transition-all text-xs uppercase tracking-widest">Save Record</button>
-            <button id="cancelBtn" onclick="resetForm()" class="hidden w-full bg-slate-200 text-slate-600 font-bold py-3 rounded-2xl text-xs uppercase">Cancel Edit</button>
+            <button id="saveBtn" onclick="save()" class="w-full bg-slate-900 text-white font-black py-4 rounded-2xl text-xs uppercase tracking-widest shadow-xl">Save Record</button>
+            <button id="cancelBtn" onclick="resetForm()" class="hidden w-full text-slate-400 font-bold text-[10px] uppercase">Cancel Edit</button>
         </section>
 
         <div id="list" class="space-y-3"></div>
     </main>
 
     <script>
-        let db = JSON.parse(localStorage.getItem('easygo_final_v32')) || [];
+        let db = JSON.parse(localStorage.getItem('easygo_ledger_v33')) || [];
         let billImg = null;
 
         async function startCamera() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
                 document.getElementById('video').srcObject = stream;
-            } catch (err) { alert("Camera Access Required"); }
+            } catch (err) { alert("Camera Error: Please allow access."); }
         }
 
         async function processBill() {
             const v = document.getElementById('video');
             const c = document.getElementById('canvas');
             const ctx = c.getContext('2d');
-            c.width = 640; c.height = 800;
-            ctx.drawImage(v, 0, 0, 640, 800);
+            c.width = 600; c.height = 800; // Portrait Orientation
+            ctx.drawImage(v, 0, 0, 600, 800);
+            
             const raw = c.toDataURL('image/jpeg', 0.8);
-            billImg = c.toDataURL('image/webp', 0.12); // Targeting ~12KB
+            billImg = c.toDataURL('image/webp', 0.12); // ~12KB target
 
             document.getElementById('status').classList.remove('hidden');
-            const res = await Tesseract.recognize(raw, 'eng');
-            const txt = res.data.text;
             
-            // Indian Bill AI Extraction Logic
-            const gst = txt.match(/\d{2}[A-Z]{5}\d{4}[A-Z]{1}[A-Z\d]{1}[Z]{1}[A-Z\d]{1}/);
-            const amt = txt.match(/(?:total|net|pay|sum)[:\s]*(\d+[\.,]\d{2})/i);
-            const date = txt.match(/\d{2}[\/-]\d{2}[\/-]\d{2,4}/);
+            try {
+                const { data: { text } } = await Tesseract.recognize(raw, 'eng');
+                
+                // AI Data Extraction
+                const gst = text.match(/\d{2}[A-Z]{5}\d{4}[A-Z]{1}[A-Z\d]{1}[Z]{1}[A-Z\d]{1}/);
+                const amt = text.match(/(?:total|net|pay|sum)[:\s]*(\d+[\.,]\d{2})/i);
+                
+                if(gst) document.getElementById('gstn').value = gst[0];
+                if(amt) document.getElementById('rate').value = amt[1].replace(',','');
+            } catch (e) { console.error("OCR Failed", e); }
 
-            if(gst) document.getElementById('gstn').value = gst[0];
-            if(amt) document.getElementById('rate').value = amt[1].replace(',','');
-            if(date) document.getElementById('date').value = date[0];
-            
             document.getElementById('status').classList.add('hidden');
             calculate();
         }
@@ -174,15 +164,13 @@
                 img: billImg || (editId ? db.find(x => x.id == editId).img : null)
             };
 
-            if (editId) {
-                db = db.map(i => i.id == editId ? entry : i);
-            } else {
-                db.push(entry);
-            }
+            if(editId) db = db.map(i => i.id == editId ? entry : i);
+            else db.push(entry);
 
-            localStorage.setItem('easygo_final_v32', JSON.stringify(db));
+            localStorage.setItem('easygo_ledger_v33', JSON.stringify(db));
             resetForm();
             render();
+            alert("Record Updated in ₹");
         }
 
         function edit(id) {
@@ -197,7 +185,7 @@
             document.getElementById('rate').value = i.rate;
             document.getElementById('gstAmount').value = i.gst || 0;
             document.getElementById('type').value = i.type;
-            document.getElementById('saveBtn').innerText = "Update Ledger Record";
+            document.getElementById('saveBtn').innerText = "Update Ledger";
             document.getElementById('cancelBtn').classList.remove('hidden');
             calculate();
             window.scrollTo({ top: 350, behavior: 'smooth' });
@@ -205,14 +193,14 @@
 
         async function share(id) {
             const i = db.find(x => x.id == id);
-            const msg = `EasyGo Tracker Record:\nOrganisation: ${i.org}\nInv: ${i.inv}\nTotal: ₹${i.total.toFixed(2)}\nType: ${i.type}`;
+            const msg = `EasyGo Ledger:\nOrg: ${i.org}\nInvoice: ${i.inv}\nTotal: ₹${i.total.toFixed(2)}`;
             if (navigator.share) await navigator.share({ text: msg }); else alert(msg);
         }
 
         function remove(id) {
-            if(confirm("Permanently delete this record?")) {
+            if(confirm("Delete record?")) {
                 db = db.filter(x => x.id !== id);
-                localStorage.setItem('easygo_final_v32', JSON.stringify(db));
+                localStorage.setItem('easygo_ledger_v33', JSON.stringify(db));
                 render();
             }
         }
@@ -235,23 +223,22 @@
             const cont = document.getElementById('list');
             const search = document.getElementById('searchInput').value.toLowerCase();
             cont.innerHTML = '';
-            
             const filtered = db.filter(i => (i.inv+i.gstn+i.org).toLowerCase().includes(search));
             filtered.reverse().forEach(i => {
                 cont.innerHTML += `
-                    <div class="bg-white p-4 rounded-[2.5rem] border shadow-sm flex flex-col gap-3">
+                    <div class="bg-white p-4 rounded-3xl border shadow-sm flex flex-col gap-3">
                         <div class="flex items-center gap-4">
-                            ${i.img ? `<img src="${i.img}" class="w-12 h-12 rounded-2xl object-cover">` : `<div class="w-12 h-12 bg-slate-50 rounded-2xl"></div>`}
+                            ${i.img ? `<img src="${i.img}" class="w-12 h-12 rounded-xl object-cover">` : `<div class="w-12 h-12 bg-slate-50 rounded-xl"></div>`}
                             <div class="flex-1 min-w-0">
-                                <h4 class="font-black text-xs truncate uppercase tracking-tight">${i.org || 'Unknown Vendor'}</h4>
-                                <p class="text-[9px] text-slate-400 font-bold uppercase">${i.date} | INV: ${i.inv || 'N/A'}</p>
+                                <h4 class="font-black text-xs truncate uppercase">${i.org || 'Local Vendor'}</h4>
+                                <p class="text-[9px] text-slate-400 font-bold uppercase">${i.date} | INV: ${i.inv}</p>
                             </div>
                             <p class="font-black text-sm ${i.type === 'Earned' ? 'text-green-600' : 'text-red-500'}">₹${i.total.toFixed(2)}</p>
                         </div>
                         <div class="flex gap-2 border-t pt-2">
-                            <button onclick="edit(${i.id})" class="text-[9px] font-black uppercase text-blue-600 px-4 py-1 bg-blue-50 rounded-lg">Edit</button>
-                            <button onclick="share(${i.id})" class="text-[9px] font-black uppercase text-slate-600 px-4 py-1 bg-slate-50 rounded-lg">Share</button>
-                            <button onclick="remove(${i.id})" class="text-[9px] font-black uppercase text-red-500 px-4 py-1 bg-red-50 rounded-lg">Delete</button>
+                            <button onclick="edit(${i.id})" class="text-[9px] font-black uppercase text-blue-600 px-3 py-1 bg-blue-50 rounded-lg">Edit</button>
+                            <button onclick="share(${i.id})" class="text-[9px] font-black uppercase text-slate-600 px-3 py-1 bg-slate-50 rounded-lg">Share</button>
+                            <button onclick="remove(${i.id})" class="text-[9px] font-black uppercase text-red-500 px-3 py-1 bg-red-50 rounded-lg">Delete</button>
                         </div>
                     </div>`;
             });
