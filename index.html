@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EasyGo Tracker v3.0 - Instant Search</title>
+    <title>EasyGo Tracker - Ledger</title>
+    <link rel="icon" type="image/png" href="logo.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body { font-family: 'Inter', sans-serif; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        #video { width: 100%; border-radius: 1.5rem; background: #000; }
+        #video { width: 100%; border-radius: 1.5rem; background: #000; transform: scaleX(-1); }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen pb-24">
@@ -19,14 +20,14 @@
         <div class="max-w-xl mx-auto space-y-3">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                    <img src="https://i.ibb.co/XfXkXQy/Easy-Go-Logo.jpg" alt="Logo" class="h-10 w-10 rounded-full border">
-                    <h1 class="text-lg font-black text-blue-600">EasyGo <span class="text-slate-400 font-normal text-sm">v3.0</span></h1>
+                    <img src="logo.png" alt="EasyGo" class="h-10 w-10 rounded-full border object-cover">
+                    <h1 class="text-lg font-black text-blue-600 tracking-tighter">EasyGo</h1>
                 </div>
-                <div id="status" class="hidden text-[9px] font-black bg-blue-600 text-white px-3 py-1 rounded-full animate-pulse">AI SCANNING</div>
+                <div id="status" class="hidden text-[9px] font-black bg-blue-600 text-white px-3 py-1 rounded-full animate-pulse uppercase">AI Processing</div>
             </div>
             <div class="relative">
-                <input type="text" id="searchInput" oninput="render()" placeholder="Search Invoice, GSTN, or Shop Name..." 
-                       class="w-full p-3 pl-10 bg-slate-100 border-none rounded-2xl text-xs focus:ring-2 focus:ring-blue-500 transition-all">
+                <input type="text" id="searchInput" oninput="render()" placeholder="Search Invoice, GSTN, or Org Name..." 
+                       class="w-full p-3 pl-10 bg-slate-100 border-none rounded-2xl text-xs focus:ring-2 focus:ring-blue-500">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
@@ -36,25 +37,26 @@
 
     <main class="max-w-xl mx-auto p-4 space-y-4">
         
-        <section class="relative bg-black rounded-[2rem] overflow-hidden shadow-2xl aspect-video border-4 border-white">
+        <section class="relative bg-black rounded-[2.5rem] overflow-hidden shadow-2xl aspect-video border-4 border-white">
             <video id="video" autoplay playsinline></video>
             <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-4">
                 <button onclick="startCamera()" class="bg-white/20 backdrop-blur-md text-white px-4 py-2 rounded-full text-[10px] font-bold">Flip Cam</button>
-                <button onclick="processBill()" class="bg-white h-14 w-14 rounded-full border-4 border-blue-600 flex items-center justify-center active:scale-90 transition-transform shadow-xl">
+                <button onclick="processBill()" class="bg-white h-14 w-14 rounded-full border-4 border-blue-600 flex items-center justify-center active:scale-90 shadow-xl transition-all">
                     <div class="h-8 w-8 bg-blue-600 rounded-full"></div>
                 </button>
             </div>
             <canvas id="canvas" class="hidden"></canvas>
         </section>
 
-        <section class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100 space-y-4">
+        <section id="entryForm" class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100 space-y-4">
+            <input type="hidden" id="editId">
             <div class="grid grid-cols-2 gap-3">
                 <div class="space-y-1">
-                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">1. Date</label>
+                    <label class="text-[9px] font-black text-slate-400 uppercase">1. Date</label>
                     <input type="date" id="date" class="w-full p-3 bg-slate-50 rounded-xl border-none text-xs">
                 </div>
                 <div class="space-y-1">
-                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Spent / Earned</label>
+                    <label class="text-[9px] font-black text-slate-400 uppercase">Bill Type</label>
                     <select id="type" class="w-full p-3 bg-slate-50 rounded-xl border-none text-xs font-bold">
                         <option value="Spent">🔴 Spent</option>
                         <option value="Earned">🟢 Earned</option>
@@ -63,61 +65,62 @@
             </div>
 
             <div class="space-y-1">
-                <label class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">2. Organisation Name</label>
-                <input type="text" id="org" placeholder="e.g. Jio Mart" class="w-full p-3 bg-slate-50 rounded-xl border-none text-xs font-bold">
+                <label class="text-[9px] font-black text-slate-400 uppercase">2. Organisation Name</label>
+                <input type="text" id="org" placeholder="Shop/Person Name" class="w-full p-3 bg-slate-50 rounded-xl border-none text-xs font-bold">
             </div>
 
             <div class="grid grid-cols-2 gap-3">
                 <div class="space-y-1">
-                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">3. Invoice / S.No</label>
-                    <input type="text" id="inv" placeholder="INV-2025-01" class="w-full p-3 bg-slate-50 rounded-xl border-none text-xs">
+                    <label class="text-[9px] font-black text-slate-400 uppercase">3. Invoice / S.No</label>
+                    <input type="text" id="inv" class="w-full p-3 bg-slate-50 rounded-xl border-none text-xs">
                 </div>
                 <div class="space-y-1">
-                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">4. GST Number</label>
-                    <input type="text" id="gstn" placeholder="GSTIN" class="w-full p-3 bg-slate-50 rounded-xl border-none text-xs uppercase font-mono">
+                    <label class="text-[9px] font-black text-slate-400 uppercase">4. GST Number</label>
+                    <input type="text" id="gstn" class="w-full p-3 bg-slate-50 rounded-xl border-none text-xs uppercase font-mono">
                 </div>
             </div>
 
-            <div class="space-y-1 border-t pt-4">
-                <label class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">5. Item Name(s)</label>
-                <textarea id="items" rows="2" placeholder="Item details..." class="w-full p-3 bg-slate-50 rounded-xl border-none text-xs"></textarea>
+            <div class="space-y-1">
+                <label class="text-[9px] font-black text-slate-400 uppercase">5. Item Name(s)</label>
+                <textarea id="items" rows="1" placeholder="Multiple items allowed..." class="w-full p-3 bg-slate-50 rounded-xl border-none text-xs"></textarea>
             </div>
 
             <div class="grid grid-cols-3 gap-2">
-                <div class="space-y-1 text-center">
+                <div class="space-y-1">
                     <label class="text-[9px] font-black text-slate-400 uppercase">6. Qty</label>
                     <input type="number" id="qty" value="1" oninput="calculate()" class="w-full p-3 bg-slate-50 rounded-xl border-none text-xs text-center">
                 </div>
-                <div class="space-y-1 text-center">
+                <div class="space-y-1">
                     <label class="text-[9px] font-black text-slate-400 uppercase">7. Rate</label>
                     <input type="number" id="rate" oninput="calculate()" class="w-full p-3 bg-slate-50 rounded-xl border-none text-xs text-center font-bold">
                 </div>
-                <div class="space-y-1 text-center">
-                    <label class="text-[9px] font-black text-slate-400 uppercase">8. GST</label>
+                <div class="space-y-1">
+                    <label class="text-[9px] font-black text-slate-400 uppercase">8. GST ₹</label>
                     <input type="number" id="gstAmount" oninput="calculate()" class="w-full p-3 bg-slate-50 rounded-xl border-none text-xs text-center">
                 </div>
             </div>
 
-            <div class="bg-blue-600 p-5 rounded-3xl text-center shadow-lg shadow-blue-200">
-                <p class="text-[9px] text-blue-100 font-black uppercase mb-1">9. Total Payable</p>
+            <div class="bg-blue-600 p-5 rounded-3xl text-center shadow-lg shadow-blue-100">
+                <p class="text-[9px] text-blue-100 font-black uppercase mb-1">9. Total Amount (INR)</p>
                 <h2 id="totalLabel" class="text-3xl font-black text-white">₹ 0.00</h2>
             </div>
 
-            <button onclick="save()" class="w-full bg-slate-900 text-white font-black py-5 rounded-2xl shadow-xl active:scale-[0.98] transition-all tracking-widest text-xs uppercase">Save to Ledger</button>
+            <button id="saveBtn" onclick="save()" class="w-full bg-slate-900 text-white font-black py-5 rounded-2xl shadow-xl active:scale-[0.98] transition-all text-xs uppercase tracking-widest">Save Record</button>
+            <button id="cancelBtn" onclick="resetForm()" class="hidden w-full bg-slate-200 text-slate-600 font-bold py-3 rounded-2xl text-xs uppercase">Cancel Edit</button>
         </section>
 
         <div id="list" class="space-y-3"></div>
     </main>
 
     <script>
-        let db = JSON.parse(localStorage.getItem('easygo_ledger')) || [];
+        let db = JSON.parse(localStorage.getItem('easygo_final_v32')) || [];
         let billImg = null;
 
         async function startCamera() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
                 document.getElementById('video').srcObject = stream;
-            } catch (err) { alert("Camera Error: " + err.message); }
+            } catch (err) { alert("Camera Access Required"); }
         }
 
         async function processBill() {
@@ -126,20 +129,21 @@
             const ctx = c.getContext('2d');
             c.width = 640; c.height = 800;
             ctx.drawImage(v, 0, 0, 640, 800);
-            
             const raw = c.toDataURL('image/jpeg', 0.8);
-            billImg = c.toDataURL('image/webp', 0.12); // ~12KB storage target
+            billImg = c.toDataURL('image/webp', 0.12); // Targeting ~12KB
 
             document.getElementById('status').classList.remove('hidden');
             const res = await Tesseract.recognize(raw, 'eng');
             const txt = res.data.text;
-
-            // AI logic for Indian Bills
-            const gstMatch = txt.match(/\d{2}[A-Z]{5}\d{4}[A-Z]{1}[A-Z\d]{1}[Z]{1}[A-Z\d]{1}/);
-            const amtMatch = txt.match(/(?:total|net|pay|sum)[:\s]*(\d+[\.,]\d{2})/i);
             
-            if(gstMatch) document.getElementById('gstn').value = gstMatch[0];
-            if(amtMatch) document.getElementById('rate').value = amtMatch[1].replace(',','');
+            // Indian Bill AI Extraction Logic
+            const gst = txt.match(/\d{2}[A-Z]{5}\d{4}[A-Z]{1}[A-Z\d]{1}[Z]{1}[A-Z\d]{1}/);
+            const amt = txt.match(/(?:total|net|pay|sum)[:\s]*(\d+[\.,]\d{2})/i);
+            const date = txt.match(/\d{2}[\/-]\d{2}[\/-]\d{2,4}/);
+
+            if(gst) document.getElementById('gstn').value = gst[0];
+            if(amt) document.getElementById('rate').value = amt[1].replace(',','');
+            if(date) document.getElementById('date').value = date[0];
             
             document.getElementById('status').classList.add('hidden');
             calculate();
@@ -154,27 +158,77 @@
         }
 
         function save() {
+            const editId = document.getElementById('editId').value;
             const entry = {
-                id: Date.now(),
+                id: editId ? parseInt(editId) : Date.now(),
                 date: document.getElementById('date').value,
                 org: document.getElementById('org').value,
                 inv: document.getElementById('inv').value,
                 gstn: document.getElementById('gstn').value,
                 items: document.getElementById('items').value,
+                qty: document.getElementById('qty').value,
+                rate: document.getElementById('rate').value,
+                gst: document.getElementById('gstAmount').value,
                 total: parseFloat(document.getElementById('totalLabel').innerText.replace('₹ ', '')),
                 type: document.getElementById('type').value,
-                img: billImg
+                img: billImg || (editId ? db.find(x => x.id == editId).img : null)
             };
-            db.push(entry);
-            localStorage.setItem('easygo_ledger', JSON.stringify(db));
+
+            if (editId) {
+                db = db.map(i => i.id == editId ? entry : i);
+            } else {
+                db.push(entry);
+            }
+
+            localStorage.setItem('easygo_final_v32', JSON.stringify(db));
+            resetForm();
             render();
-            // Clear fields for next entry
+        }
+
+        function edit(id) {
+            const i = db.find(x => x.id == id);
+            document.getElementById('editId').value = i.id;
+            document.getElementById('date').value = i.date;
+            document.getElementById('org').value = i.org;
+            document.getElementById('inv').value = i.inv;
+            document.getElementById('gstn').value = i.gstn;
+            document.getElementById('items').value = i.items;
+            document.getElementById('qty').value = i.qty;
+            document.getElementById('rate').value = i.rate;
+            document.getElementById('gstAmount').value = i.gst || 0;
+            document.getElementById('type').value = i.type;
+            document.getElementById('saveBtn').innerText = "Update Ledger Record";
+            document.getElementById('cancelBtn').classList.remove('hidden');
+            calculate();
+            window.scrollTo({ top: 350, behavior: 'smooth' });
+        }
+
+        async function share(id) {
+            const i = db.find(x => x.id == id);
+            const msg = `EasyGo Tracker Record:\nOrganisation: ${i.org}\nInv: ${i.inv}\nTotal: ₹${i.total.toFixed(2)}\nType: ${i.type}`;
+            if (navigator.share) await navigator.share({ text: msg }); else alert(msg);
+        }
+
+        function remove(id) {
+            if(confirm("Permanently delete this record?")) {
+                db = db.filter(x => x.id !== id);
+                localStorage.setItem('easygo_final_v32', JSON.stringify(db));
+                render();
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('editId').value = "";
             document.getElementById('org').value = "";
             document.getElementById('inv').value = "";
+            document.getElementById('gstn').value = "";
             document.getElementById('items').value = "";
             document.getElementById('rate').value = "";
             document.getElementById('gstAmount').value = "";
+            document.getElementById('saveBtn').innerText = "Save Record";
+            document.getElementById('cancelBtn').classList.add('hidden');
             billImg = null;
+            calculate();
         }
 
         function render() {
@@ -182,22 +236,23 @@
             const search = document.getElementById('searchInput').value.toLowerCase();
             cont.innerHTML = '';
             
-            const filtered = db.filter(i => 
-                (i.inv && i.inv.toLowerCase().includes(search)) || 
-                (i.gstn && i.gstn.toLowerCase().includes(search)) || 
-                (i.org && i.org.toLowerCase().includes(search))
-            );
-
+            const filtered = db.filter(i => (i.inv+i.gstn+i.org).toLowerCase().includes(search));
             filtered.reverse().forEach(i => {
                 cont.innerHTML += `
-                    <div class="bg-white p-4 rounded-[2rem] border border-slate-100 shadow-sm flex items-center gap-4 transition-all active:scale-95">
-                        ${i.img ? `<img src="${i.img}" class="w-12 h-12 rounded-2xl object-cover shadow-inner border border-slate-50">` : `<div class="w-12 h-12 bg-slate-100 rounded-2xl"></div>`}
-                        <div class="flex-1 min-w-0">
-                            <h4 class="font-black text-xs truncate uppercase tracking-tight">${i.org || 'Unknown Vendor'}</h4>
-                            <p class="text-[9px] text-slate-400 font-bold uppercase">${i.date} | INV: ${i.inv || 'N/A'}</p>
-                            <p class="text-[8px] text-blue-500 font-bold truncate">${i.gstn ? 'GSTIN: '+i.gstn : i.items}</p>
+                    <div class="bg-white p-4 rounded-[2.5rem] border shadow-sm flex flex-col gap-3">
+                        <div class="flex items-center gap-4">
+                            ${i.img ? `<img src="${i.img}" class="w-12 h-12 rounded-2xl object-cover">` : `<div class="w-12 h-12 bg-slate-50 rounded-2xl"></div>`}
+                            <div class="flex-1 min-w-0">
+                                <h4 class="font-black text-xs truncate uppercase tracking-tight">${i.org || 'Unknown Vendor'}</h4>
+                                <p class="text-[9px] text-slate-400 font-bold uppercase">${i.date} | INV: ${i.inv || 'N/A'}</p>
+                            </div>
+                            <p class="font-black text-sm ${i.type === 'Earned' ? 'text-green-600' : 'text-red-500'}">₹${i.total.toFixed(2)}</p>
                         </div>
-                        <p class="font-black text-sm ${i.type === 'Earned' ? 'text-green-600' : 'text-red-500'}">₹${i.total.toFixed(2)}</p>
+                        <div class="flex gap-2 border-t pt-2">
+                            <button onclick="edit(${i.id})" class="text-[9px] font-black uppercase text-blue-600 px-4 py-1 bg-blue-50 rounded-lg">Edit</button>
+                            <button onclick="share(${i.id})" class="text-[9px] font-black uppercase text-slate-600 px-4 py-1 bg-slate-50 rounded-lg">Share</button>
+                            <button onclick="remove(${i.id})" class="text-[9px] font-black uppercase text-red-500 px-4 py-1 bg-red-50 rounded-lg">Delete</button>
+                        </div>
                     </div>`;
             });
         }
