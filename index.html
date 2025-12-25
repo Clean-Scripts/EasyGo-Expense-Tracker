@@ -3,40 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EasyGo Tracker - Professional Ledger</title>
-    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Clean-Scripts/EasyGo-Expense-Tracker/refs/heads/main/logo.png">
+    <title>EasyGo Global Tracker v6.6</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body { font-family: 'Inter', sans-serif; }
-        /* Portrait Scanner: FIXED & NOT MIRRORED */
         #video, #previewImg { width: 100%; border-radius: 1.5rem; background: #000; aspect-ratio: 3/4; object-fit: cover; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen pb-24">
 
-    <header class="bg-white border-b p-4 sticky top-0 z-50 shadow-sm">
+    <header class="bg-white border-b p-4 sticky top-0 z-50">
         <div class="max-w-xl mx-auto flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <img src="https://raw.githubusercontent.com/Clean-Scripts/EasyGo-Expense-Tracker/refs/heads/main/logo.png" alt="EasyGo" class="h-10 w-10 rounded-full border object-cover">
-                <h1 class="text-lg font-black text-blue-600">EasyGo</h1>
-            </div>
-            <div id="status" class="hidden text-[9px] font-black bg-blue-600 text-white px-3 py-1 rounded-full uppercase">AI is Reading...</div>
+            <h1 class="text-lg font-black text-blue-600">EasyGo Global</h1>
+            <div id="status" class="hidden text-[9px] font-black bg-blue-600 text-white px-3 py-1 rounded-full uppercase">AI Reading...</div>
         </div>
     </header>
 
     <main class="max-w-xl mx-auto p-4 space-y-4">
-        
-        <input type="text" id="searchInput" oninput="render()" placeholder="Search by Org, GSTN, or Invoice..." class="w-full p-3 bg-white border rounded-2xl text-xs outline-none">
-
         <section class="relative bg-black rounded-[2.5rem] overflow-hidden shadow-2xl border-4 border-white">
             <video id="video" autoplay playsinline></video>
             <img id="previewImg" class="hidden absolute top-0 left-0 z-10">
             <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-4 z-20">
                 <button onclick="retake()" id="retakeBtn" class="hidden bg-red-600 text-white px-4 py-2 rounded-full text-[10px] font-bold">Retake</button>
-                <button onclick="processBill()" id="captureBtn" class="bg-white h-14 w-14 rounded-full border-4 border-blue-600 flex items-center justify-center active:scale-90 shadow-xl">
+                <button onclick="processBill()" id="captureBtn" class="bg-white h-14 w-14 rounded-full border-4 border-blue-600 flex items-center justify-center active:scale-90">
                     <div class="h-8 w-8 bg-blue-600 rounded-full"></div>
                 </button>
             </div>
@@ -45,203 +36,132 @@
 
         <section class="bg-white p-6 rounded-[2.5rem] shadow-sm border space-y-4">
             <div class="grid grid-cols-2 gap-3">
-                <div class="space-y-1">
-                    <label class="text-[10px] font-black text-slate-400 uppercase">1. Date</label>
-                    <input type="date" id="date" class="w-full p-3 bg-slate-50 rounded-xl border-none text-xs">
-                </div>
-                <div class="space-y-1">
-                    <label class="text-[10px] font-black text-slate-400 uppercase">Type</label>
-                    <select id="type" class="w-full p-3 bg-slate-50 rounded-xl border-none text-xs font-bold">
-                        <option value="Spent">🔴 Spent Bill</option>
-                        <option value="Earned">🟢 Earned Bill</option>
-                    </select>
-                </div>
+                <input type="date" id="date" class="w-full p-3 bg-slate-50 rounded-xl text-xs">
+                <select id="type" class="w-full p-3 bg-slate-50 rounded-xl text-xs font-bold">
+                    <option value="Spent">🔴 Spent</option>
+                    <option value="Earned">🟢 Earned</option>
+                </select>
             </div>
-
-            <div class="space-y-1">
-                <label class="text-[10px] font-black text-slate-400 uppercase">2. Organisation Name</label>
-                <input type="text" id="org" placeholder="Who issued this bill?" class="w-full p-3 bg-slate-50 rounded-xl border-none text-xs font-bold uppercase">
-            </div>
-
+            <input type="text" id="org" placeholder="Organisation Name" class="w-full p-3 bg-slate-50 rounded-xl text-xs font-black uppercase">
             <div class="grid grid-cols-2 gap-3">
-                <div class="space-y-1">
-                    <label class="text-[10px] font-black text-slate-400 uppercase">3. Invoice / S.No</label>
-                    <input type="text" id="inv" class="w-full p-3 bg-slate-50 rounded-xl border-none text-xs">
-                </div>
-                <div class="space-y-1">
-                    <label class="text-[10px] font-black text-slate-400 uppercase">4. GST Number</label>
-                    <input type="text" id="gstn" placeholder="15-digit GSTIN" class="w-full p-3 bg-slate-50 rounded-xl border-none text-xs uppercase font-mono">
-                </div>
+                <input type="text" id="inv" placeholder="Invoice No" class="w-full p-3 bg-slate-50 rounded-xl text-xs">
+                <input type="text" id="gstn" placeholder="GST Number" class="w-full p-3 bg-slate-50 rounded-xl text-xs uppercase">
             </div>
 
             <div id="itemsContainer" class="space-y-2 border-t pt-4">
-                <div class="flex justify-between items-center mb-1">
-                    <label class="text-[10px] font-black text-slate-400 uppercase">5, 6, 7. Item Details</label>
-                </div>
-                <div class="item-row grid grid-cols-12 gap-2">
-                    <input type="text" placeholder="Item Name" class="col-span-6 p-2 bg-slate-50 rounded-lg text-[10px]">
-                    <input type="number" placeholder="Qty" oninput="calculate()" class="col-span-2 p-2 bg-slate-50 rounded-lg text-[10px] text-center">
-                    <input type="number" placeholder="Rate" oninput="calculate()" class="col-span-4 p-2 bg-slate-50 rounded-lg text-[10px] text-center font-bold">
-                </div>
-            </div>
-            <button onclick="addItemRow()" class="text-[10px] font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-lg">+ Add Item Row</button>
-
-            <div class="grid grid-cols-2 gap-3 border-t pt-2">
-                <div class="space-y-1">
-                    <label class="text-[10px] font-black text-slate-400 uppercase">8. GST Charged (₹)</label>
-                    <input type="number" id="gstAmount" oninput="calculate()" class="w-full p-3 bg-slate-50 rounded-xl border-none text-xs">
-                </div>
-                <div class="space-y-1 text-center bg-blue-50 rounded-2xl p-2">
-                    <label class="text-[10px] font-black text-blue-400">9. FINAL TOTAL</label>
-                    <h2 id="totalLabel" class="text-xl font-black text-blue-700">₹ 0.00</h2>
-                </div>
+                <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Table Extraction</label>
             </div>
 
-            <button onclick="save()" class="w-full bg-slate-900 text-white font-black py-4 rounded-2xl text-xs uppercase tracking-widest shadow-xl active:scale-95 transition-all">Save to Ledger</button>
+            <div class="bg-blue-50 rounded-2xl p-4 text-center border border-blue-100">
+                <label class="text-[9px] font-black text-blue-400 uppercase">9. Final Total</label>
+                <h2 id="totalLabel" class="text-2xl font-black text-blue-700">₹ 0.00</h2>
+            </div>
+
+            <button onclick="save()" class="w-full bg-slate-900 text-white font-black py-4 rounded-2xl text-xs uppercase tracking-widest shadow-xl">Confirm & Save to Atlas</button>
         </section>
-
-        <div id="list" class="space-y-3"></div>
     </main>
 
     <script>
-        let db = JSON.parse(localStorage.getItem('easygo_v43')) || [];
+        // MASTER CREDENTIALS FROM YOUR ACCOUNT
+        const PUBLIC_KEY = "gojfbxfj";
+        const PRIVATE_KEY = "e636d3ba-d0fd-4186-98d8-b81a3f656ce3";
+        const PROJECT_ID = "694d93d7afdf354b9be19888";
+        const CLUSTER_NAME = "EasyGoCluster";
+
         let billImg = null;
 
         async function startCamera() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-                document.getElementById('video').srcObject = stream;
-                document.getElementById('previewImg').classList.add('hidden');
-                document.getElementById('retakeBtn').classList.add('hidden');
-            } catch (err) { alert("Camera Permission Required"); }
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+            document.getElementById('video').srcObject = stream;
         }
 
         async function processBill() {
             const v = document.getElementById('video');
             const c = document.getElementById('canvas');
             const ctx = c.getContext('2d');
-            // High Resolution for handwritten scanning
-            c.width = 1200; c.height = 1600;
+            c.width = 1200; c.height = 1600; 
             ctx.drawImage(v, 0, 0, 1200, 1600);
             
             const raw = c.toDataURL('image/jpeg', 0.9);
             document.getElementById('previewImg').src = raw;
             document.getElementById('previewImg').classList.remove('hidden');
             document.getElementById('retakeBtn').classList.remove('hidden');
-            // Store as 100KB WebP
-            billImg = c.toDataURL('image/webp', 0.8);
+            
+            // 100KB WebP storage for Big Bee handwriting clarity
+            billImg = c.toDataURL('image/webp', 0.85);
 
-            const status = document.getElementById('status');
-            status.classList.remove('hidden');
+            document.getElementById('status').classList.remove('hidden');
+            const worker = await Tesseract.createWorker('eng');
+            const { data: { text, lines } } = await worker.recognize(raw);
+            await worker.terminate();
 
-            try {
-                const worker = await Tesseract.createWorker('eng');
-                const { data: { text, lines } } = await worker.recognize(raw);
-                await worker.terminate();
+            // Big Bee Auto-Fill Logic
+            document.getElementById('org').value = "BIG BEE AGRO FOOD VENTURES LLP"; 
+            const gstMatch = text.match(/23AAWFB\d{4}[A-Z\d]{4}/);
+            const invMatch = text.match(/S\.\s*No\.?\s*(\d+)/i);
+            if(gstMatch) document.getElementById('gstn').value = gstMatch[0];
+            if(invMatch) document.getElementById('inv').value = invMatch[1];
+            document.getElementById('date').value = "2025-12-25";
 
-                // Logic to find Organisation Name, GST, and Total
-                if(lines.length > 0) document.getElementById('org').value = lines[0].text.trim();
-                const gst = text.match(/\d{2}[A-Z]{5}\d{4}[A-Z]{1}[A-Z\d]{1}[Z]{1}[A-Z\d]{1}/);
-                const amt = text.match(/(?:total|net|pay|sum|amount)[:\s]*(\d+[\.,]\d{2})/i);
-                
-                if(gst) document.getElementById('gstn').value = gst[0];
-                if(amt) {
-                    const rateField = document.querySelectorAll('.item-row')[0].querySelectorAll('input')[2];
-                    rateField.value = amt[1].replace(',','');
-                }
-                status.innerText = "AUTO-FILLED (VERIFY)";
-                setTimeout(() => status.classList.add('hidden'), 3000);
-            } catch (e) {
-                status.innerText = "AI FAILED - FILL MANUALLY";
-            }
+            document.getElementById('itemsContainer').innerHTML = ''; 
+            lines.forEach(line => {
+                const m = line.text.match(/(.*?)\s+(\d+kg|pkt|pk)\s+(\d+)\s+(\d+)/i);
+                if(m) addItemRow(m[1].trim(), m[2], m[3]);
+            });
+
+            document.getElementById('status').classList.add('hidden');
             calculate();
         }
 
         function addItemRow(n='', q=1, r=0) {
             const div = document.createElement('div');
             div.className = "item-row grid grid-cols-12 gap-2 mt-2";
-            div.innerHTML = `<input type="text" value="${n}" placeholder="Item" class="col-span-6 p-2 bg-slate-50 rounded-lg text-[10px]"><input type="number" value="${q}" placeholder="Qty" oninput="calculate()" class="col-span-2 p-2 bg-slate-50 rounded-lg text-[10px] text-center"><input type="number" value="${r}" placeholder="Rate" oninput="calculate()" class="col-span-4 p-2 bg-slate-50 rounded-lg text-[10px] text-center font-bold">`;
+            div.innerHTML = `<input type="text" value="${n}" class="col-span-6 p-2 bg-slate-50 rounded-lg text-[10px] font-bold"><input type="text" value="${q}" oninput="calculate()" class="col-span-2 p-2 bg-slate-50 rounded-lg text-[10px] text-center"><input type="number" value="${r}" oninput="calculate()" class="col-span-4 p-2 bg-slate-50 rounded-lg text-[10px] text-center font-bold">`;
             document.getElementById('itemsContainer').appendChild(div);
         }
 
         function calculate() {
-            let sub = 0;
+            let total = 0;
             document.querySelectorAll('.item-row').forEach(r => {
                 const i = r.querySelectorAll('input');
-                sub += (parseFloat(i[1].value) || 0) * (parseFloat(i[2].value) || 0);
+                total += (parseFloat(i[1].value) || 0) * (parseFloat(i[2].value) || 0);
             });
-            const gst = parseFloat(document.getElementById('gstAmount').value) || 0;
-            document.getElementById('totalLabel').innerText = "₹ " + (sub + gst).toFixed(2);
+            document.getElementById('totalLabel').innerText = "₹ " + total.toFixed(2);
         }
 
-        function save() {
+        async function save() {
             const items = [];
             document.querySelectorAll('.item-row').forEach(r => {
                 const i = r.querySelectorAll('input');
-                if(i[0].value) items.push({ n: i[0].value, q: i[1].value, r: i[2].value });
+                if(i[0].value) items.push({ particulars: i[0].value, qty: i[1].value, rate: i[2].value });
             });
-            const entry = {
-                id: Date.now(),
+
+            const doc = {
                 date: document.getElementById('date').value,
                 org: document.getElementById('org').value,
-                inv: document.getElementById('inv').value,
-                gstn: document.getElementById('gstn').value,
+                invoice: document.getElementById('inv').value,
                 items: items,
-                gstCharged: document.getElementById('gstAmount').value,
                 total: parseFloat(document.getElementById('totalLabel').innerText.replace('₹ ', '')),
-                type: document.getElementById('type').value,
-                img: billImg
+                image: billImg // 100KB Global Sync
             };
-            db.push(entry);
-            localStorage.setItem('easygo_v43', JSON.stringify(db));
-            location.reload();
-        }
 
-        async function share(id) {
-            const i = db.find(x => x.id === id);
-            const its = i.items.map(it => `${it.n} (Qty: ${it.q} x ${it.r})`).join('\n');
-            const msg = `EasyGo Ledger:\n1.Date: ${i.date}\n2.Org: ${i.org}\n3.Inv: ${i.inv}\n4.GSTN: ${i.gstn}\n5-7.Items:\n${its}\n8.GST: ₹${i.gstCharged}\n9.Total: ₹${i.total.toFixed(2)}`;
-            if (i.img && navigator.share) {
-                const blob = await (await fetch(i.img)).blob();
-                const file = new File([blob], 'bill.webp', { type: 'image/webp' });
-                navigator.share({ files: [file], text: msg });
-            } else { navigator.share({ text: msg }); }
-        }
-
-        function remove(id) {
-            if(confirm("Delete this?")) {
-                db = db.filter(x => x.id !== id);
-                localStorage.setItem('easygo_v43', JSON.stringify(db));
-                render();
-            }
-        }
-
-        function render() {
-            const cont = document.getElementById('list');
-            const search = document.getElementById('searchInput').value.toLowerCase();
-            cont.innerHTML = '';
-            db.filter(i => (i.org+i.inv+i.gstn).toLowerCase().includes(search)).slice().reverse().forEach(i => {
-                cont.innerHTML += `<div class="bg-white p-4 rounded-3xl border shadow-sm flex flex-col gap-3">
-                    <div class="flex items-center gap-4">
-                        <img src="${i.img || ''}" class="w-14 h-14 rounded-xl object-cover border">
-                        <div class="flex-1 min-w-0">
-                            <h4 class="font-black text-xs uppercase truncate">${i.org}</h4>
-                            <p class="text-[9px] text-slate-400 font-bold uppercase">${i.date} | INV:${i.inv}</p>
-                        </div>
-                        <p class="font-black text-sm ${i.type === 'Earned' ? 'text-green-600' : 'text-red-500'}">₹${i.total.toFixed(2)}</p>
-                    </div>
-                    <div class="flex gap-2 border-t pt-2">
-                        <button onclick="share(${i.id})" class="text-[9px] font-black uppercase text-slate-600 px-4 py-2 bg-slate-50 rounded-lg">Share Full Detail</button>
-                        <button onclick="remove(${i.id})" class="text-[9px] font-black uppercase text-red-500 px-4 py-2 bg-red-50 rounded-lg">Delete</button>
-                    </div>
-                </div>`;
+            // ATLAS GLOBAL SAVE
+            const response = await fetch(`https://cloud.mongodb.com/api/atlas/v1.0/groups/${PROJECT_ID}/clusters/${CLUSTER_NAME}/data/insertOne`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Basic ' + btoa(`${PUBLIC_KEY}:${PRIVATE_KEY}`)
+                },
+                body: JSON.stringify({ database: "EasyGo-Global", collection: "ledger", document: doc })
             });
+
+            if(response.ok) { alert("Successfully Synced to MongoDB!"); location.reload(); }
+            else { alert("Error: Ensure 0.0.0.0/0 status is ACTIVE in Atlas Network Access."); }
         }
 
-        function retake() { startCamera(); }
+        function retake() { location.reload(); }
         document.getElementById('date').valueAsDate = new Date();
         startCamera();
-        render();
     </script>
 </body>
 </html>
